@@ -1,0 +1,625 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>イオン株主優待：キャッシュバック＋イオンシネマ 利回り計算</title>
+  <meta name="description" content="持ち株数・株価・月間のイオン買い物金額に加えて、イオンシネマ優待（1回800円割引）も足し込んだ年換算利回りを自動計算します。" />
+  <style>
+    :root{
+      --bg:#fbf7fd;
+      --card:#ffffff;
+      --ink:#1f1230;
+      --muted:#6b5a7a;
+      --line:#eadcf0;
+      --accent:#8a2aa5;
+      --accent2:#b14cc9;
+      --warn:#8a1f1f;
+      --ok:#0f6a3b;
+      --chip:#f7f1fa;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+      background: radial-gradient(1200px 600px at 10% -10%, #f1d7fb 0%, transparent 55%),
+                  radial-gradient(900px 500px at 95% 0%, #e7d1ff 0%, transparent 55%),
+                  var(--bg);
+      color:var(--ink);
+    }
+    .wrap{max-width:980px;margin:0 auto;padding:18px}
+    header{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;margin:6px 0 14px}
+    h1{font-size:20px;margin:0;letter-spacing:.02em}
+    .sub{color:var(--muted);font-size:12px;margin-top:6px;line-height:1.5}
+    .badge{
+      display:inline-flex;align-items:center;gap:8px;
+      background:linear-gradient(90deg,var(--accent),var(--accent2));
+      color:#fff;
+      padding:8px 10px;border-radius:999px;font-size:12px;font-weight:700
+    }
+    .grid{display:grid;grid-template-columns:1.15fr .85fr;gap:14px}
+    @media (max-width:900px){.grid{grid-template-columns:1fr}}
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:14px;
+      box-shadow: 0 10px 26px rgba(31,18,48,.06);
+    }
+    .card h2{font-size:14px;margin:0 0 10px;color:var(--accent)}
+    .sectionTitle{margin-top:12px;font-size:12px;color:var(--muted);font-weight:800}
+    label{display:block;font-size:12px;color:var(--muted);margin:10px 0 6px}
+    input, select{
+      width:100%;
+      padding:12px 12px;
+      border:1px solid #ddd;
+      border-radius:12px;
+      font-size:16px;
+      background:#fff;
+      outline:none;
+    }
+    input:focus, select:focus{border-color:var(--accent2);box-shadow:0 0 0 4px rgba(177,76,201,.12)}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media (max-width:520px){.row{grid-template-columns:1fr}}
+    .help{
+      font-size:12px;color:var(--muted);margin-top:8px;line-height:1.55
+    }
+    .help strong{color:var(--ink)}
+    .kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+    @media (max-width:520px){.kpis{grid-template-columns:1fr}}
+    .kpi{
+      background:var(--chip);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px;
+    }
+    .kpi .t{font-size:12px;color:var(--muted)}
+    .kpi .v{font-size:18px;margin-top:6px;font-weight:800}
+    .kpi .s{font-size:12px;color:var(--muted);margin-top:6px}
+    .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    button{
+      border:none;
+      border-radius:12px;
+      padding:11px 12px;
+      font-weight:800;
+      font-size:13px;
+      cursor:pointer;
+    }
+    .primary{background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff;}
+    .ghost{background:#fff;border:1px solid var(--line);color:var(--ink);}
+    .toast{margin-top:10px;font-size:12px;color:var(--muted);min-height:18px;}
+    details{margin-top:12px}
+    details summary{
+      cursor:pointer;color:var(--accent);font-weight:800;list-style:none;user-select:none;
+    }
+    details summary::-webkit-details-marker{display:none}
+    .tableWrap{overflow:auto;margin-top:10px;border:1px solid var(--line);border-radius:14px}
+    table{border-collapse:collapse;width:100%;min-width:720px;background:#fff}
+    th,td{border-bottom:1px solid var(--line);padding:10px 10px;text-align:center;font-size:13px;white-space:nowrap}
+    thead th{
+      position:sticky;top:0;
+      background:linear-gradient(90deg,var(--accent),var(--accent2));
+      color:#fff;border-bottom:none;font-weight:800;
+    }
+    tbody tr:nth-child(odd){background:#fcf9fe}
+    .leftHead{font-weight:800;color:var(--ink);text-align:left}
+    .muted{color:var(--muted)}
+    .warn{color:var(--warn);font-weight:800}
+    .ok{color:var(--ok);font-weight:800}
+    footer{margin:14px 0 4px;color:var(--muted);font-size:11px;line-height:1.6}
+    code{background:#f2eafb;padding:.1em .35em;border-radius:6px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>イオン株主優待：キャッシュバック＋イオンシネマ 利回り計算</h1>
+        <div class="sub">
+          <strong>キャッシュバック</strong>（買い物）＋ <strong>イオンシネマ割引</strong>（1人1回あたり800円）を合算して、<strong>年換算の優待利回り</strong>を自動計算します（ブラウザ内で完結）。
+        </div>
+      </div>
+      <div class="badge">わしっし式・秒で計算</div>
+    </header>
+
+    <div class="grid">
+      <!-- 入力 -->
+      <section class="card">
+        <h2>入力</h2>
+
+        <div class="sectionTitle">① キャッシュバック（買い物）</div>
+
+        <div class="row">
+          <div>
+            <label>保有株数（株）</label>
+            <input id="shares" inputmode="numeric" placeholder="例：100" />
+          </div>
+          <div>
+            <label>現在の株価（円）</label>
+            <input id="price" inputmode="numeric" placeholder="例：1800" />
+          </div>
+        </div>
+
+        <label>月間のイオンでの買い物金額（円）</label>
+        <input id="monthly" inputmode="numeric" placeholder="例：30000" />
+
+        <div class="row">
+          <div>
+            <label>還元率（優待）</label>
+            <select id="rateMode">
+              <option value="auto">株数から自動判定（3/4/5/7%）</option>
+              <option value="manual">手入力（任意の%）</option>
+            </select>
+          </div>
+          <div>
+            <label>還元率（%）※手入力時のみ</label>
+            <input id="rateManual" inputmode="decimal" placeholder="例：1.0" disabled />
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>年間の買い物上限（円）</label>
+            <input id="annualCap" inputmode="numeric" placeholder="例：2000000" />
+          </div>
+          <div>
+            <label>上限の扱い</label>
+            <select id="capMode">
+              <option value="on">上限で打ち止め（推奨）</option>
+              <option value="off">上限なし（試算用）</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="sectionTitle">② イオンシネマ（オーナーズカード）</div>
+
+        <div class="row">
+          <div>
+            <label>月に映画を見る回数（回/月）</label>
+            <input id="movieTimes" inputmode="numeric" placeholder="例：2" />
+          </div>
+          <div>
+            <label>1回あたりの人数（人）</label>
+            <input id="moviePeople" inputmode="numeric" placeholder="例：2" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>1人1回あたり割引額（円）</label>
+            <input id="movieDiscount" inputmode="numeric" placeholder="例：800" />
+          </div>
+          <div>
+            <label>（参考）</label>
+            <input value="割引額は「通常−優待」の差分" disabled />
+          </div>
+        </div>
+
+        <div class="btns">
+          <button class="primary" id="copyLinkBtn">この条件でURLをコピー</button>
+          <button class="ghost" id="resetBtn">リセット</button>
+        </div>
+        <div class="toast" id="toast"></div>
+
+        <div class="help">
+          <strong>ポイント：</strong>映画は「<strong>回数</strong> × <strong>人数</strong> × <strong>800円</strong>」で年換算して、キャッシュバックに合算します。<br/>
+          シネマ優待を使わない月は、回数を <strong>0</strong> にすればOKです。
+        </div>
+
+        <details>
+          <summary>早見表（利回り）を表示</summary>
+          <div class="help muted">
+            現在入力している「株数 / 還元率 / 映画条件」を固定して、月間買い物額×株価別の利回り%を一覧にします。
+          </div>
+          <div class="tableWrap">
+            <table id="quickTable" aria-label="優待利回り早見表">
+              <thead>
+                <tr>
+                  <th>月間</th>
+                  <th>年間</th>
+                  <th>CB（年）</th>
+                  <th>映画（年）</th>
+                  <th>合計（年）</th>
+                  <th>株価 1,333円</th>
+                  <th>株価 1,500円</th>
+                  <th>株価 1,600円</th>
+                  <th>株価 1,700円</th>
+                  <th>株価 1,800円</th>
+                  <th>株価 2,000円</th>
+                </tr>
+              </thead>
+              <tbody id="quickTbody"></tbody>
+            </table>
+          </div>
+        </details>
+      </section>
+
+      <!-- 結果 -->
+      <section class="card">
+        <h2>結果</h2>
+
+        <div class="kpis">
+          <div class="kpi">
+            <div class="t">適用還元率（買い物）</div>
+            <div class="v" id="rateText">-</div>
+            <div class="s" id="rateSub">-</div>
+          </div>
+
+          <div class="kpi">
+            <div class="t">投資金額（概算）</div>
+            <div class="v" id="investText">-</div>
+            <div class="s" id="investSub">-</div>
+          </div>
+
+          <div class="kpi">
+            <div class="t">年間キャッシュバック（買い物）</div>
+            <div class="v" id="cashbackText">-</div>
+            <div class="s" id="cashbackSub">-</div>
+          </div>
+
+          <div class="kpi">
+            <div class="t">年間 映画割引（イオンシネマ）</div>
+            <div class="v" id="movieText">-</div>
+            <div class="s" id="movieSub">-</div>
+          </div>
+
+          <div class="kpi">
+            <div class="t">年間 優待合計（CB＋映画）</div>
+            <div class="v" id="totalBenefitText">-</div>
+            <div class="s" id="totalBenefitSub">-</div>
+          </div>
+
+          <div class="kpi">
+            <div class="t">優待利回り（年換算・合計）</div>
+            <div class="v" id="yieldText">-</div>
+            <div class="s" id="yieldSub">-</div>
+          </div>
+        </div>
+
+        <div class="help" id="capNote"></div>
+
+        <details>
+          <summary>内訳（計算式）</summary>
+          <div class="help muted" id="breakdown"></div>
+        </details>
+      </section>
+    </div>
+
+    <footer>
+      ※これは「買い物キャッシュバック」＋「映画割引」のみの試算です。配当、対象外取引、利用条件の変更、回数制限などは反映していません。<br/>
+      GitHub Pagesで使うなら、このファイルを <code>index.html</code> として置くだけでOKです。
+    </footer>
+  </div>
+
+<script>
+  // ---------- utils ----------
+  const $ = (id) => document.getElementById(id);
+  const fmtYen = (n) => new Intl.NumberFormat("ja-JP").format(Math.round(n)) + "円";
+  const fmtPct = (n) => (Math.round(n * 1000) / 1000).toFixed(3) + "%";
+  const fmtNum = (n) => new Intl.NumberFormat("ja-JP").format(Math.round(n));
+
+  function parseNum(v){
+    if (v == null) return 0;
+    const s = String(v).replace(/,/g,"").trim();
+    const n = Number(s);
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  function autoRateByShares(shares){
+    if (shares >= 3000) return 0.07;
+    if (shares >= 1000) return 0.05;
+    if (shares >= 500)  return 0.04;
+    if (shares >= 100)  return 0.03;
+    return 0.00;
+  }
+
+  function autoRateLabel(shares){
+    if (shares >= 3000) return "3,000株以上 → 7%";
+    if (shares >= 1000) return "1,000〜2,999株 → 5%";
+    if (shares >= 500)  return "500〜999株 → 4%";
+    if (shares >= 100)  return "100〜499株 → 3%";
+    return "100株未満 → 0%（対象外の想定）";
+  }
+
+  function setToast(msg){
+    $("toast").textContent = msg || "";
+  }
+
+  // ---------- state load/save ----------
+  const STORAGE_KEY = "aeon_yutai_calc_v2";
+
+  function loadFromStorage(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return;
+      const s = JSON.parse(raw);
+      if (s && typeof s === "object"){
+        if (s.shares != null) $("shares").value = s.shares;
+        if (s.price != null) $("price").value = s.price;
+        if (s.monthly != null) $("monthly").value = s.monthly;
+        if (s.rateMode) $("rateMode").value = s.rateMode;
+        if (s.rateManual != null) $("rateManual").value = s.rateManual;
+        if (s.annualCap != null) $("annualCap").value = s.annualCap;
+        if (s.capMode) $("capMode").value = s.capMode;
+        if (s.movieTimes != null) $("movieTimes").value = s.movieTimes;
+        if (s.moviePeople != null) $("moviePeople").value = s.moviePeople;
+        if (s.movieDiscount != null) $("movieDiscount").value = s.movieDiscount;
+      }
+    }catch(e){}
+  }
+
+  function saveToStorage(){
+    const payload = {
+      shares: $("shares").value,
+      price: $("price").value,
+      monthly: $("monthly").value,
+      rateMode: $("rateMode").value,
+      rateManual: $("rateManual").value,
+      annualCap: $("annualCap").value,
+      capMode: $("capMode").value,
+      movieTimes: $("movieTimes").value,
+      moviePeople: $("moviePeople").value,
+      movieDiscount: $("movieDiscount").value
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+  }
+
+  // URL params:
+  // ?shares=100&price=1800&monthly=30000&rateMode=auto&rateManual=1.0&annualCap=2000000&capMode=on&movieTimes=2&moviePeople=2&movieDiscount=800
+  function loadFromQuery(){
+    const p = new URLSearchParams(location.search);
+    const keys = ["shares","price","monthly","rateMode","rateManual","annualCap","capMode","movieTimes","moviePeople","movieDiscount"];
+    let hit = false;
+    keys.forEach(k=>{
+      if(p.has(k)){
+        hit = true;
+        const val = p.get(k);
+        if (k === "rateMode" || k === "capMode") $(k).value = val;
+        else $(k).value = val;
+      }
+    });
+    return hit;
+  }
+
+  function buildShareURL(){
+    const p = new URLSearchParams();
+    p.set("shares", parseNum($("shares").value));
+    p.set("price", parseNum($("price").value));
+    p.set("monthly", parseNum($("monthly").value));
+    p.set("rateMode", $("rateMode").value);
+    p.set("rateManual", $("rateManual").value || "");
+    p.set("annualCap", parseNum($("annualCap").value));
+    p.set("capMode", $("capMode").value);
+    p.set("movieTimes", parseNum($("movieTimes").value));
+    p.set("moviePeople", parseNum($("moviePeople").value));
+    p.set("movieDiscount", parseNum($("movieDiscount").value));
+    const base = location.origin + location.pathname;
+    return base + "?" + p.toString();
+  }
+
+  // ---------- calc ----------
+  function getRate(shares){
+    const mode = $("rateMode").value;
+    if (mode === "manual"){
+      const v = parseNum($("rateManual").value);
+      return Math.max(0, v / 100);
+    }
+    return autoRateByShares(shares);
+  }
+
+  function recalc(){
+    const shares = parseNum($("shares").value);
+    const price  = parseNum($("price").value);
+    const monthly = parseNum($("monthly").value);
+    const capMode = $("capMode").value;
+
+    // shopping cashback
+    const annualSpend = monthly * 12;
+    const annualCap = Math.max(0, parseNum($("annualCap").value));
+    const eligible = (capMode === "on") ? Math.min(annualSpend, annualCap) : annualSpend;
+    const rate = getRate(shares);
+    const cashback = eligible * rate;
+
+    // cinema benefit
+    const movieTimes = Math.max(0, parseNum($("movieTimes").value));
+    const moviePeople = Math.max(0, parseNum($("moviePeople").value));
+    const movieDiscount = Math.max(0, parseNum($("movieDiscount").value));
+    const movieTicketsPerYear = movieTimes * moviePeople * 12;
+    const movieSavings = movieTicketsPerYear * movieDiscount;
+
+    // totals
+    const totalBenefit = cashback + movieSavings;
+    const invest = shares * price;
+    const y = (invest > 0) ? (totalBenefit / invest * 100) : 0;
+
+    // rate display
+    $("rateText").textContent = (rate * 100).toFixed(2) + "%";
+    $("rateSub").textContent = ($("rateMode").value === "auto")
+      ? autoRateLabel(shares)
+      : "手入力モード";
+
+    // invest
+    $("investText").textContent = (invest > 0) ? fmtYen(invest) : "-";
+    $("investSub").textContent = (shares > 0 && price > 0) ? `${fmtNum(shares)}株 × ${fmtNum(price)}円` : "-";
+
+    // cashback
+    $("cashbackText").textContent = fmtYen(cashback);
+    $("cashbackSub").textContent = `年間買い物 ${fmtYen(annualSpend)} → 対象 ${fmtYen(eligible)}`;
+
+    // movie
+    $("movieText").textContent = fmtYen(movieSavings);
+    if (movieTicketsPerYear > 0){
+      $("movieSub").textContent = `年 ${fmtNum(movieTicketsPerYear)}枚（${fmtNum(movieTimes)}回/月 × ${fmtNum(moviePeople)}人）× ${fmtNum(movieDiscount)}円`;
+    } else {
+      $("movieSub").textContent = `0回/月なら0円（入力で加算）`;
+    }
+
+    // total benefit
+    $("totalBenefitText").textContent = fmtYen(totalBenefit);
+    $("totalBenefitSub").textContent = `CB ${fmtYen(cashback)} ＋ 映画 ${fmtYen(movieSavings)}`;
+
+    // yield
+    $("yieldText").textContent = (invest > 0) ? fmtPct(y) : "-";
+    if (invest > 0 && totalBenefit > 0){
+      const paybackYears = invest / totalBenefit;
+      $("yieldSub").textContent = `優待合計だけで元を取る目安：約${paybackYears.toFixed(1)}年`;
+    } else {
+      $("yieldSub").textContent = "-";
+    }
+
+    // cap note
+    const capNote = $("capNote");
+    if (capMode === "on" && annualSpend > annualCap){
+      capNote.innerHTML =
+        `<span class="warn">⚠️ 上限で打ち止め中：</span>年間買い物 ${fmtYen(annualSpend)} → 上限 ${fmtYen(annualCap)} を適用`;
+    } else if (capMode === "on"){
+      capNote.innerHTML =
+        `<span class="ok">✓</span> 上限適用：年間買い物 ${fmtYen(annualSpend)}（上限 ${fmtYen(annualCap)}）`;
+    } else {
+      capNote.innerHTML =
+        `<span class="warn">※上限なし</span>：年間買い物 ${fmtYen(annualSpend)} をそのまま計算（試算用）`;
+    }
+
+    // breakdown
+    $("breakdown").innerHTML =
+      `【買い物キャッシュバック】<br/>` +
+      `・年間買い物額 = 月間買い物額 × 12 = <strong>${fmtYen(monthly)}</strong> × 12 = <strong>${fmtYen(annualSpend)}</strong><br/>` +
+      `・対象買い物額 = ${capMode === "on" ? "min(年間買い物額, 上限)" : "年間買い物額"} = <strong>${fmtYen(eligible)}</strong><br/>` +
+      `・年間キャッシュバック = 対象買い物額 × 還元率 = <strong>${fmtYen(eligible)}</strong> × <strong>${(rate*100).toFixed(2)}%</strong> = <strong>${fmtYen(cashback)}</strong><br/><br/>` +
+      `【イオンシネマ割引】<br/>` +
+      `・年間割引 =（回/月 × 人数 × 12）× 1人1回割引額 =（<strong>${fmtNum(movieTimes)}</strong> × <strong>${fmtNum(moviePeople)}</strong> × 12）× <strong>${fmtNum(movieDiscount)}</strong> = <strong>${fmtYen(movieSavings)}</strong><br/><br/>` +
+      `【合計】<br/>` +
+      `・年間優待合計 = CB ＋ 映画 = <strong>${fmtYen(cashback)}</strong> ＋ <strong>${fmtYen(movieSavings)}</strong> = <strong>${fmtYen(totalBenefit)}</strong><br/>` +
+      `・投資金額（概算）= 株数 × 株価 = <strong>${fmtNum(shares)}</strong> × <strong>${fmtNum(price)}</strong> = <strong>${fmtYen(invest)}</strong><br/>` +
+      `・優待利回り（年）= 年間優待合計 ÷ 投資金額 × 100 = <strong>${fmtPct(y)}</strong>`;
+
+    renderQuickTable(shares, rate, movieSavings);
+
+    saveToStorage();
+  }
+
+  // ---------- quick table ----------
+  const priceCols = [1333, 1500, 1600, 1700, 1800, 2000];
+  const monthlyRows = [10000, 20000, 30000, 40000, 50000, 100000, 166000];
+
+  function renderQuickTable(shares, rate, movieSavings){
+    const tbody = $("quickTbody");
+    tbody.innerHTML = "";
+
+    monthlyRows.forEach(m=>{
+      const annual = m * 12;
+
+      const capMode = $("capMode").value;
+      const annualCap = Math.max(0, parseNum($("annualCap").value));
+      const eligible = (capMode === "on") ? Math.min(annual, annualCap) : annual;
+
+      const back = eligible * rate;
+      const total = back + movieSavings;
+
+      const tr = document.createElement("tr");
+
+      const td0 = document.createElement("td");
+      td0.className = "leftHead";
+      td0.textContent = fmtNum(m) + "円";
+      tr.appendChild(td0);
+
+      const td1 = document.createElement("td");
+      td1.textContent = fmtNum(annual) + "円";
+      tr.appendChild(td1);
+
+      const td2 = document.createElement("td");
+      td2.textContent = fmtNum(Math.round(back)) + "円";
+      tr.appendChild(td2);
+
+      const td3 = document.createElement("td");
+      td3.textContent = fmtNum(Math.round(movieSavings)) + "円";
+      tr.appendChild(td3);
+
+      const td4 = document.createElement("td");
+      td4.textContent = fmtNum(Math.round(total)) + "円";
+      tr.appendChild(td4);
+
+      priceCols.forEach(p=>{
+        const invest = shares * p;
+        const y = (invest > 0) ? (total / invest * 100) : 0;
+        const td = document.createElement("td");
+        td.textContent = (invest > 0) ? ((Math.round(y*10)/10).toFixed(1) + "%") : "-";
+        tr.appendChild(td);
+      });
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  // ---------- events ----------
+  function toggleManual(){
+    const on = $("rateMode").value === "manual";
+    $("rateManual").disabled = !on;
+    if (!on) $("rateManual").value = "";
+    recalc();
+  }
+
+  $("rateMode").addEventListener("change", toggleManual);
+
+  ["shares","price","monthly","rateManual","annualCap","capMode","movieTimes","moviePeople","movieDiscount"].forEach(id=>{
+    $(id).addEventListener("input", ()=>{ setToast(""); recalc(); });
+    $(id).addEventListener("change", ()=>{ setToast(""); recalc(); });
+  });
+
+  $("copyLinkBtn").addEventListener("click", async ()=>{
+    const url = buildShareURL();
+    try{
+      await navigator.clipboard.writeText(url);
+      setToast("✅ URLをコピーしました（そのまま共有できます）");
+    }catch(e){
+      const tmp = document.createElement("textarea");
+      tmp.value = url;
+      document.body.appendChild(tmp);
+      tmp.select();
+      document.execCommand("copy");
+      document.body.removeChild(tmp);
+      setToast("✅ URLをコピーしました（fallback）");
+    }
+  });
+
+  $("resetBtn").addEventListener("click", ()=>{
+    localStorage.removeItem(STORAGE_KEY);
+    $("shares").value = "100";
+    $("price").value = "1800";
+    $("monthly").value = "30000";
+    $("rateMode").value = "auto";
+    $("rateManual").value = "";
+    $("annualCap").value = "2000000";
+    $("capMode").value = "on";
+
+    // cinema defaults
+    $("movieTimes").value = "0";
+    $("moviePeople").value = "2";
+    $("movieDiscount").value = "800";
+
+    toggleManual();
+    setToast("リセットしました。");
+  });
+
+  // ---------- init ----------
+  (function init(){
+    // defaults
+    $("shares").value = "100";
+    $("price").value = "1800";
+    $("monthly").value = "30000";
+    $("annualCap").value = "2000000";
+    $("capMode").value = "on";
+    $("rateMode").value = "auto";
+
+    $("movieTimes").value = "0";
+    $("moviePeople").value = "2";
+    $("movieDiscount").value = "800";
+
+    const qhit = loadFromQuery();
+    if (!qhit) loadFromStorage();
+
+    toggleManual(); // also recalc()
+  })();
+</script>
+</body>
+</html>
