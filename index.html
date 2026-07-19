@@ -120,7 +120,7 @@
           </div>
           <div>
             <label>現在の株価（円）</label>
-            <input id="price" inputmode="numeric" placeholder="例：1800" />
+            <input id="price" inputmode="numeric" placeholder="例：2000" />
           </div>
         </div>
 
@@ -303,7 +303,7 @@
     localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
   }
 
-  // URL params: ?shares=100&price=1800&monthly=30000&movieTimes=2&moviePeople=2
+  // URL params: ?shares=100&price=2000&monthly=30000&movieTimes=2&moviePeople=2
   function loadFromQuery(){
     const p = new URLSearchParams(location.search);
     const keys = ["shares","price","monthly","movieTimes","moviePeople"];
@@ -406,7 +406,7 @@
   }
 
   // ---------- quick table ----------
-  const priceCols = [1333, 1500, 1600, 1700, 1800, 2000];
+  const priceCols = [1333, 1500, 1600, 1700, 2000, 2000];
   const monthlyRows = [10000, 20000, 30000, 40000, 50000, 100000, 166000];
 
   function renderQuickTable(shares, rate, movieSavings){
@@ -479,7 +479,7 @@
   $("resetBtn").addEventListener("click", ()=>{
     localStorage.removeItem(STORAGE_KEY);
     $("shares").value = "100";
-    $("price").value = "1800";
+    $("price").value = "2000";
     $("monthly").value = "30000";
     $("movieTimes").value = "0";
     $("moviePeople").value = "2";
@@ -490,7 +490,7 @@
   // ---------- init ----------
   (function init(){
     $("shares").value = "100";
-    $("price").value = "1800";
+    $("price").value = "2000";
     $("monthly").value = "30000";
     $("movieTimes").value = "0";
     $("moviePeople").value = "2";
