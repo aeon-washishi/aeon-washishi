@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>イオン株主優待：利回り計算（CB＋イオンシネマ）</title>
-  <meta name="description" content="持ち株数・株価・月間のイオン買い物金額に加えて、イオンシネマ優待（1回800円割引）も足し込んだ年換算利回りを自動計算します。" />
+  <meta name="description" content="持ち株数・株価・月間のイオン買い物金額に加えて、イオンシネマ優待（1回1000円割引）も足し込んだ年換算利回りを自動計算します。" />
   <style>
     :root{
       --bg:#fbf7fd;
@@ -65,14 +65,14 @@
       padding:12px;
     }
     .kpi .t{font-size:12px;color:var(--muted)}
-    .kpi .v{font-size:18px;margin-top:6px;font-weight:800}
+    .kpi .v{font-size:18px;margin-top:6px;font-weight:1000}
     .kpi .s{font-size:12px;color:var(--muted);margin-top:6px}
     .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
     button{
       border:none;
       border-radius:12px;
       padding:11px 12px;
-      font-weight:800;
+      font-weight:1000;
       font-size:13px;
       cursor:pointer;
     }
@@ -80,7 +80,7 @@
     .ghost{background:#fff;border:1px solid var(--line);color:var(--ink);}
     .toast{margin-top:10px;font-size:12px;color:var(--muted);min-height:18px;}
     details{margin-top:12px}
-    details summary{cursor:pointer;color:var(--accent);font-weight:800;list-style:none;user-select:none;}
+    details summary{cursor:pointer;color:var(--accent);font-weight:1000;list-style:none;user-select:none;}
     details summary::-webkit-details-marker{display:none}
     .tableWrap{overflow:auto;margin-top:10px;border:1px solid var(--line);border-radius:14px}
     table{border-collapse:collapse;width:100%;min-width:760px;background:#fff}
@@ -88,12 +88,12 @@
     thead th{
       position:sticky;top:0;
       background:linear-gradient(90deg,var(--accent),var(--accent2));
-      color:#fff;border-bottom:none;font-weight:800;
+      color:#fff;border-bottom:none;font-weight:1000;
     }
     tbody tr:nth-child(odd){background:#fcf9fe}
-    .leftHead{font-weight:800;color:var(--ink);text-align:left}
-    .warn{color:var(--warn);font-weight:800}
-    .ok{color:var(--ok);font-weight:800}
+    .leftHead{font-weight:1000;color:var(--ink);text-align:left}
+    .warn{color:var(--warn);font-weight:1000}
+    .ok{color:var(--ok);font-weight:1000}
     footer{margin:14px 0 4px;color:var(--muted);font-size:11px;line-height:1.7}
     code{background:#f2eafb;padding:.1em .35em;border-radius:6px}
   </style>
@@ -103,7 +103,7 @@
     <header>
       <h1>イオン株主優待：利回り計算（キャッシュバック＋イオンシネマ）</h1>
       <div class="sub">
-        持ち株数・株価・月間のイオン買い物額に加えて、<strong>イオンシネマ（800円/人/回の割引）</strong>も合算して
+        持ち株数・株価・月間のイオン買い物額に加えて、<strong>イオンシネマ（1000円/人/回の割引）</strong>も合算して
         <strong>年換算の優待利回り</strong>を計算します。
       </div>
     </header>
@@ -147,7 +147,7 @@
         <div class="help">
           <strong>固定条件：</strong><br/>
           ・買い物キャッシュバックは <strong>年間200万円</strong> までを対象として計算（上限超過分は切り捨て）<br/>
-          ・イオンシネマ割引は <strong>800円/人/回</strong> として計算（入力不要）<br/>
+          ・イオンシネマ割引は <strong>1000円/人/回</strong> として計算（入力不要）<br/>
           ・還元率は添付資料の区分（例：<strong>100〜199株は1%</strong>）で自動判定します。 :contentReference[oaicite:1]{index=1}
         </div>
 
@@ -166,7 +166,7 @@
                   <th>株価 1,500円</th>
                   <th>株価 1,600円</th>
                   <th>株価 1,700円</th>
-                  <th>株価 1,800円</th>
+                  <th>株価 1,1000円</th>
                   <th>株価 2,000円</th>
                 </tr>
               </thead>
@@ -236,7 +236,7 @@
 <script>
   // ===== 固定パラメータ =====
   const CAP_ANNUAL_YEN = 2000000;  // 年間の買い物上限（固定）
-  const MOVIE_DISCOUNT_YEN = 800;  // 1人1回あたり割引（固定）
+  const MOVIE_DISCOUNT_YEN = 1000;  // 1人1回あたり割引（固定）
 
   // ---------- utils ----------
   const $ = (id) => document.getElementById(id);
@@ -340,7 +340,7 @@
     const rate = rateByShares(shares);
     const cashback = eligible * rate;
 
-    // cinema benefit (fixed 800 yen)
+    // cinema benefit (fixed 1000 yen)
     const movieTimes = Math.max(0, parseNum($("movieTimes").value));
     const moviePeople = Math.max(0, parseNum($("moviePeople").value));
     const movieTicketsPerYear = movieTimes * moviePeople * 12;
@@ -364,8 +364,8 @@
     $("movieText").textContent = fmtYen(movieSavings);
     $("movieSub").textContent =
       (movieTicketsPerYear > 0)
-        ? `年 ${fmtNum(movieTicketsPerYear)}人回（${fmtNum(movieTimes)}回/月 × ${fmtNum(moviePeople)}人）× 800円`
-        : `0回/月なら0円（800円/人/回で計算）`;
+        ? `年 ${fmtNum(movieTicketsPerYear)}人回（${fmtNum(movieTimes)}回/月 × ${fmtNum(moviePeople)}人）× 1000円`
+        : `0回/月なら0円（1000円/人/回で計算）`;
 
     $("totalBenefitText").textContent = fmtYen(totalBenefit);
     $("totalBenefitSub").textContent = `CB ${fmtYen(cashback)} ＋ 映画 ${fmtYen(movieSavings)}`;
@@ -394,7 +394,7 @@
       `・対象買い物額 = min(年間買い物額, 200万円) = <strong>${fmtYen(eligible)}</strong><br/>` +
       `・年間キャッシュバック = 対象買い物額 × 還元率 = <strong>${fmtYen(eligible)}</strong> × <strong>${(rate*100).toFixed(2)}%</strong> = <strong>${fmtYen(cashback)}</strong><br/><br/>` +
       `【イオンシネマ割引】<br/>` +
-      `・年間割引 =（回/月 × 人数 × 12）× 800円 =（<strong>${fmtNum(movieTimes)}</strong> × <strong>${fmtNum(moviePeople)}</strong> × 12）× 800 = <strong>${fmtYen(movieSavings)}</strong><br/><br/>` +
+      `・年間割引 =（回/月 × 人数 × 12）× 1000円 =（<strong>${fmtNum(movieTimes)}</strong> × <strong>${fmtNum(moviePeople)}</strong> × 12）× 1000 = <strong>${fmtYen(movieSavings)}</strong><br/><br/>` +
       `【合計】<br/>` +
       `・年間優待合計 = <strong>${fmtYen(cashback)}</strong> ＋ <strong>${fmtYen(movieSavings)}</strong> = <strong>${fmtYen(totalBenefit)}</strong><br/>` +
       `・投資金額（概算）= <strong>${fmtNum(shares)}</strong> × <strong>${fmtNum(price)}</strong> = <strong>${fmtYen(invest)}</strong><br/>` +
